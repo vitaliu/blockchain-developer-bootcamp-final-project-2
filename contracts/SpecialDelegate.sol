@@ -1,4 +1,4 @@
-pragma solidity 8.0.0;
+pragma solidity 0.8.7;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract SpecialDelegate {
@@ -21,8 +21,15 @@ ERROR CODES:
     mapping(address => uint256) public daoMemberTokenAmounts;
 
 
-    mapping(address => bool) public delegates;
+    mapping(address => Delegate) public delegates;
     mapping(address => uint256) public delegateAmounts;
+
+/* --------- STRUCTS --------- */
+    struct Delegate {
+        mapping(address => uint256) tokensDelegated;
+        uint256 timesVoted;
+        bool isActive;
+    }
 
 /* --------- EVENTS --------- */
 
@@ -32,7 +39,7 @@ ERROR CODES:
 
 /* --------- MODIFIERS --------- */
     modifier isDelegate(address caller) {
-        require(delegates[caller], "NOT A DELEGATOR");
+        require(delegates[caller].isActive, "NOT A DELEGATOR");
         _;
     }
     modifier hasEnoughTokens(uint256 amount) {
@@ -57,9 +64,10 @@ ERROR CODES:
 
 
     // DAO member can give tokens to delegate to allow them to vote
-    function giveDelegation(address _delegate, uint256 _amount) external hasEnoughTokens(_amount) {
-        delegateAmounts[_delegate] += _amount;
-        bool success = _delegate.call(_amount)("");
+    function giveDelegation(address payable _delegate, uint256 _amount) external hasEnoughTokens(_amount) {
+        delegateAmounts[_delegate].tokensDelegated[msg.sender] += _amount;
+        delegateAmounts[_delegate].isActive += true;
+        (bool success, bytes memory data) = _delegate.call{value: _amount}("");
         if (success) {
             emit DelegationGiven(_amount, msg.sender);
         } else {
