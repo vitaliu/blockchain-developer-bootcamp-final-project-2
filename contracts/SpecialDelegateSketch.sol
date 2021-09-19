@@ -74,71 +74,35 @@ ERROR CODES:
 
     // DAO member can give tokens to delegate to allow them to vote
     function giveDelegation(address payable _delegate, uint256 _amount) external hasEnoughTokens(_amount) {
-        if (isDelegate[_delegate]) {
-        delegates[_delegate] = new Delegate({
-            tokensDelegated: _amount, // number of tokens delegated with the DAO member that delegated that amount as the key
-            timesVoted: 0,
-            isActive: true,
-            _address: _delegate
-            });
-        } else {
-             delegates[_delegate].tokensDelegated += _amount;
-        }
+        // function that allows DAO members to give their tokens to a delegate
 
-        (bool success, bytes memory data) = _delegate.call{value: _amount}("");
+        // if a this address is already a Delegate, add to their existing amount of tokens for voting. Else, create a new struct called Delegate and then add the amount that is sent from the caller
 
-        if (success) {
-            emit DelegationGiven(_amount, msg.sender);
-        } else {
-            emit Error(1);
-        }
+        // once the delegate's token amount are updated, actually send the tokens to the delegate address
 
+       // if successful, emit an event that says tokens were delegated and if not then emit and Error event
     }
 
 
 
     // Send tokens back from delegate to DAO member
     function sendTokensBackToMember() private voteLimitReached {
-
+        // sendsTokens back to DAO member from delegate that has them
     }
 
     function transferDelegation(uint256 amount, address _to) public {
         require(msg.sender == currOwner, "Only the owner of these tokens can make this call");
-        delegate(_to);
-        uint256 prevAmount = ownerAmounts[msg.sender];
-        ownerAmounts[msg.sender] = prevAmount - amount;
-        transferFrom(msg.sender, _to,amount);
+        // transfersDelegation to another delegate if necessary?
 
     }
 
     function updateVotes(bool didVote) public {
-        // require(<maloch contract address will go here>);
-        if (didVote) {
-            selfVoteCount += 1;
-        }
-        totalVoteCount += 1;
-        checkIfShouldReturn();
+        // udpates the number of votes that have been executed on chain and also checks if tokens need to be returned
+        // checkIfShouldReturn();
     }
     function checkIfShouldReturn()  internal {
-        int voteRatio = int(selfVoteCount - totalVoteCount);
-        if (voteRatio < minimumThreshold) {
-            transferFrom(address(this), address(0xd9145CCE52D386f254917e481eB44e9943F39138) ,address(this).balance);
-        }
+       // check if the tokens should go back to the DAO member if the conditions for a delegate to need to release their tokens are met
     }
 
-    /**
-    @dev Not sure if thiese functions are needed yet
-                    |
-                    |
-                    V
 
-    function voteForMembers() external isDelegate(msg.sender) {
-
-    }
-
-   function mint(address to, uint256 amount) external {
-        _mint(to, amount);
-    }
-
-*/
 }
