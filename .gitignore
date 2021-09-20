@@ -1,1 +1,5 @@
 /node_modules
+/special-delegate-frontend/node_modules
+/special-delegate-frontend/.env
+/special-delegate-frontend/.pnp
+/special-delegate-frontend/.pnp.js

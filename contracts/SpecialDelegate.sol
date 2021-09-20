@@ -1,7 +1,7 @@
-pragma solidity 0.8.7;
+pragma solidity 0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract SpecialDelegate {
+contract SpecialDelegate is ERC20 {
 /* --------- STORAGE --------- */
 /*
 ERROR CODES:
@@ -23,6 +23,7 @@ ERROR CODES:
 
     mapping(address => Delegate) public delegates;
     mapping(address => bool) public isDelegate;
+
     mapping(address => uint256) public delegateAmounts; // to keep track of the amount of delegation tokens each delegate has
 
 /* --------- STRUCTS --------- */
@@ -47,7 +48,7 @@ ERROR CODES:
     event Error(uint256 indexed errorCode);
 
 /* --------- MODIFIERS --------- */
-    modifier isDelegate(address caller) {
+    modifier delegateOnly(address caller) {
         require(delegates[caller].isActive, "NOT A DELEGATOR");
         _;
     }
@@ -75,7 +76,7 @@ ERROR CODES:
     // DAO member can give tokens to delegate to allow them to vote
     function giveDelegation(address payable _delegate, uint256 _amount) external hasEnoughTokens(_amount) {
         if (isDelegate[_delegate]) {
-        delegates[_delegate] = new Delegate({
+        delegates[_delegate] =  Delegate({
             tokensDelegated: _amount, // number of tokens delegated with the DAO member that delegated that amount as the key
             timesVoted: 0,
             isActive: true,
@@ -102,29 +103,28 @@ ERROR CODES:
 
     }
 
-    function transferDelegation(uint256 amount, address _to) public {
-        require(msg.sender == currOwner, "Only the owner of these tokens can make this call");
-        delegate(_to);
-        uint256 prevAmount = ownerAmounts[msg.sender];
-        ownerAmounts[msg.sender] = prevAmount - amount;
-        transferFrom(msg.sender, _to,amount);
+    // function transferDelegation(uint256 amount, address _to) public {
+    //     require(msg.sender == currOwner, "Only the owner of these tokens can make this call");
+    //     uint256 prevAmount = ownerAmounts[msg.sender];
+    //     ownerAmounts[msg.sender] = prevAmount - amount;
+    //     transferFrom(msg.sender, _to,amount);
 
-    }
+    // }
 
-    function updateVotes(bool didVote) public {
-        // require(<maloch contract address will go here>);
-        if (didVote) {
-            selfVoteCount += 1;
-        }
-        totalVoteCount += 1;
-        checkIfShouldReturn();
-    }
-    function checkIfShouldReturn()  internal {
-        int voteRatio = int(selfVoteCount - totalVoteCount);
-        if (voteRatio < minimumThreshold) {
-            transferFrom(address(this), address(0xd9145CCE52D386f254917e481eB44e9943F39138) ,address(this).balance);
-        }
-    }
+    // function updateVotes(bool didVote) public {
+    //     // require(<maloch contract address will go here>);
+    //     if (didVote) {
+    //         selfVoteCount += 1;
+    //     }
+    //     totalVoteCount += 1;
+    //     checkIfShouldReturn();
+    // }
+    // function checkIfShouldReturn()  internal {
+    //     int voteRatio = int(selfVoteCount - totalVoteCount);
+    //     if (voteRatio < minimumThreshold) {
+    //         transferFrom(address(this), address(0xd9145CCE52D386f254917e481eB44e9943F39138) ,address(this).balance);
+    //     }
+    // }
 
     /**
     @dev Not sure if thiese functions are needed yet

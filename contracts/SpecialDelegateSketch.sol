@@ -1,7 +1,7 @@
-pragma solidity 0.8.7;
+pragma solidity 0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract SpecialDelegate {
+contract SpecialDelegate is ERC20 {
 /* --------- STORAGE --------- */
 /*
 ERROR CODES:
@@ -47,7 +47,7 @@ ERROR CODES:
     event Error(uint256 indexed errorCode);
 
 /* --------- MODIFIERS --------- */
-    modifier isDelegate(address caller) {
+    modifier delegateOnly(address caller) {
         require(delegates[caller].isActive, "NOT A DELEGATOR");
         _;
     }
